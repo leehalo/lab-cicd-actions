@@ -1,6 +1,4 @@
-### Publicar nova versão 4
-funcionalidade pedido 1
-funcionalidade pedido 2
-funcionalidade pedido 3
+### Versão 4 — Tema Coração Rosa
+- Tema com coração rosa e fundo vermelho e frase.
 
-  ### Versão atual 3
+### Versão atual 4

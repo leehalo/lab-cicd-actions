@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Meu site - Versão 3 — corrigida</title>
+  <title>Meu site - Versão 4 — Coração Rosa</title>
   <style>
     body {
       margin: 0;
@@ -11,8 +11,75 @@
       display: grid;
       place-items: center;
       font-family: system-ui, "Segoe UI", Roboto, sans-serif;
-      background: #1e9e5a;
+      background: #e8edf0;
       padding: 1rem;
+      transition: background-color .25s ease;
+    }
+    body.aprovado { background: #1e9e5a; }
+    body.reprovado { background: #d93025; }
+    .avaliacao { margin-top: 1.5rem; text-align: left; }
+    .avaliacao label { display: block; margin-bottom: .5rem; font-weight: 600; }
+    .avaliacao input {
+      box-sizing: border-box;
+      width: 100%;
+      padding: .75rem;
+      border: 1px solid #8e8e93;
+      border-radius: 8px;
+      font: inherit;
+    }
+    .avaliacao button {
+      width: 100%;
+      margin-top: .75rem;
+      padding: .75rem 1rem;
+      border: 0;
+      border-radius: 8px;
+      background: #1d1d1f;
+      color: #fff;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .avaliacao button:focus-visible,
+    .avaliacao input:focus-visible { outline: 3px solid #0077cc; outline-offset: 2px; }
+    #resultado { min-height: 1.5em; margin: .75rem 0 0; font-weight: 700; }
+    #resultado:empty { display: none; }
+    .confetes,
+    .deslikes {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .confete {
+      position: absolute;
+      top: -1rem;
+      left: var(--posicao);
+      width: 9px;
+      height: 14px;
+      background: var(--cor);
+      animation: cair 3s ease-in forwards;
+    }
+    .deslike {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      font-size: 1.8rem;
+      animation: explodir-deslike 3s ease-out forwards;
+    }
+    @keyframes cair {
+      to { transform: translate3d(var(--desvio), 110vh, 0) rotate(720deg); opacity: 0; }
+    }
+    @keyframes explodir-deslike {
+      0% { transform: translate(-50%, -50%) scale(.3); opacity: 0; }
+      8% { opacity: 1; }
+      100% {
+        transform: translate(calc(-50% + var(--desvio)), calc(-50% + var(--queda))) rotate(var(--rotacao)) scale(.8);
+        opacity: 0;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      body { transition: none; }
     }
     .cartao {
       background: #fff;
@@ -25,36 +92,95 @@
       color: #1d1d1f;
     }
     .emoji { font-size: 4rem; }
-    h1 { margin: .5rem 0; color: #1e9e5a; }
-    .versao {
-      margin-top: 1.5rem;
-      padding: 1rem;
-      border-radius: 12px;
-      background: #f2f2f7;
-      text-align: left;
-      line-height: 1.8;
-    }
-    code { background: #e5e5ea; padding: 2px 6px; border-radius: 6px; }
+    h1 { margin: .5rem 0; color: #000; }
     footer { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5e5ea; color: #6e6e73; font-size: .85rem; }
   </style>
 </head>
 <body>
   <main class="cartao">
-    <div class="emoji">✅</div>
-    <h1>Versão 3 — corrigida</h1>
-    <p>O erro foi corrigido e o robô publicou de novo.</p>
-    PROBLEMA RESOLVIDO
+    <div class="emoji">🎓</div>
+    <h1>Avaliação do trabalho</h1>
+    <p>Informe a nota para consultar o resultado.</p>
 
-    <div class="versao">
-      🤖 <strong>Publicado pelo robô em:</strong> __DATA__<br>
-      🔖 <strong>Commit:</strong> <code>__COMMIT__</code><br>
-      👤 <strong>Enviado por:</strong> __AUTOR__
-    </div>
+    <form class="avaliacao" id="form-avaliacao">
+      <label for="nota">Nota do trabalho (0 a 10)</label>
+      <input id="nota" name="nota" type="number" min="0" max="10" step="any" required>
+      <button type="submit">Avaliar nota</button>
+      <p id="resultado" role="status" aria-live="polite"></p>
+    </form>
 
     <footer>
       🎓 UNINOVE · Automação de Processos · DevOps<br>
       Prof. Marcelino Dias da Silva
     </footer>
   </main>
+  <script>
+    const formAvaliacao = document.querySelector("#form-avaliacao");
+    const campoNota = document.querySelector("#nota");
+    const resultado = document.querySelector("#resultado");
+    const coresConfete = ["#1e9e5a", "#e83e8c", "#f2c94c", "#0077cc"];
+
+    function soltarConfetes() {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      const camada = document.createElement("div");
+      camada.className = "confetes";
+      camada.setAttribute("aria-hidden", "true");
+
+      for (let indice = 0; indice < 1000; indice++) {
+        const confete = document.createElement("span");
+        confete.className = "confete";
+        confete.style.setProperty("--posicao", `${Math.random() * 100}vw`);
+        confete.style.setProperty("--desvio", `${(Math.random() - 0.5) * 30}vw`);
+        confete.style.setProperty("--cor", coresConfete[indice % coresConfete.length]);
+        camada.append(confete);
+      }
+
+      document.body.append(camada);
+      window.setTimeout(() => camada.remove(), 3100);
+    }
+
+    function soltarDeslikes() {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      const camada = document.createElement("div");
+      camada.className = "deslikes";
+      camada.setAttribute("aria-hidden", "true");
+
+      for (let indice = 0; indice < 60; indice++) {
+        const deslike = document.createElement("span");
+        deslike.className = "deslike";
+        deslike.textContent = "👎";
+        deslike.style.setProperty("--desvio", `${(Math.random() - 0.5) * 100}vw`);
+        deslike.style.setProperty("--queda", `${15 + Math.random() * 65}vh`);
+        deslike.style.setProperty("--rotacao", `${(Math.random() - 0.5) * 180}deg`);
+        camada.append(deslike);
+      }
+
+      document.body.append(camada);
+      window.setTimeout(() => camada.remove(), 3100);
+    }
+
+    formAvaliacao.addEventListener("submit", (evento) => {
+      evento.preventDefault();
+
+      if (!campoNota.reportValidity()) return;
+
+      const nota = Number(campoNota.value);
+      document.body.classList.remove("aprovado", "reprovado");
+
+      if (nota > 6) {
+        document.body.classList.add("aprovado");
+        resultado.textContent = `Aprovado com nota ${nota}.`;
+        soltarConfetes();
+      } else if (nota < 6) {
+        document.body.classList.add("reprovado");
+        resultado.textContent = `Reprovado com nota ${nota}.`;
+        soltarDeslikes();
+      } else {
+        resultado.textContent = "Nota 6: o critério informado não define este resultado.";
+      }
+    });
+  </script>
 </body>
 </html>
